@@ -1,0 +1,10 @@
+# Datos locales de Docker / volúmenes persistentes
+db_data/
+.env
+
+# Archivos del sistema operativo y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
