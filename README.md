@@ -77,3 +77,5 @@ docker compose down
 A continuación se muestra la captura de pantalla con el entorno en ejecución en `http://localhost:8080`:
 
 ![Resultado del entorno en ejecución](captura.png)
+
+Página Web realizada con IA
