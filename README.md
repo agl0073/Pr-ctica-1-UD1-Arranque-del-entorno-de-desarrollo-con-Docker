@@ -8,13 +8,13 @@
 
 ## 📌 Descripción del Proyecto
 
-Este proyecto sustituye el modelo clásico monolítico (como XAMPP) por un entorno de desarrollo profesional, modular y aislado basado en **Docker**.
+Este proyecto cambia el modelo clásico sólido (como XAMPP) por un entorno de desarrollo profesional basado en **Docker**.
 
-A través de un único archivo `docker-compose.yml`, se orquestan tres contenedores independientes conectados entre sí mediante una red interna tipo *bridge*:
+A través de un único archivo `docker-compose.yml`, se consta de tres contenedores independientes conectados entre sí mediante una red interna tipo *bridge*:
 
-1. **`web` (Nginx):** Servidor web que atiende las peticiones HTTP entrantes en el puerto `8080` de la máquina anfitriona y las reenvía al servicio PHP a través del protocolo FastCGI.
+1. **`web` (Nginx):** Servidor web que atiende las peticiones HTTP entrantes en el puerto `8080` y las reenvía al servicio PHP a través del protocolo FastCGI.
 2. **`php` (PHP-FPM 8.3):** Contenedor construido a partir de un `Dockerfile` personalizado sobre `php:8.3-fpm`, al cual se le añade la extensión `pdo_mysql` para habilitar la conexión a bases de datos.
-3. **`db` (MySQL 8.0):** Servidor de base de datos relacional que almacena la información con un volumen persistente (`db_data`) para mantener los datos tras reiniciar los contenedores.
+3. **`db` (MySQL 8.0):** Servidor de base de datos relacional que almacena la información (`db_data`) para mantener los datos tras reiniciar los contenedores.
 
 ---
 
