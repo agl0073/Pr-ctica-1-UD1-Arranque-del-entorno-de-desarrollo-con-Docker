@@ -3,21 +3,35 @@
  * =====================================================================
  *  inc/heroe.php · Reglas del juego y datos del héroe          [CE 2.c]
  * =====================================================================
- *  Autor/a: TODO (tu nombre) · Variante: TODO (A, B o C)
+ *  Autor: Alejandro Segundo Ganoza Leiro · Variante: C · Pícara
  *
- *  Este fichero contiene SOLO PHP. Recuerda la regla sobre la etiqueta
- *  de cierre en este tipo de ficheros.
+ *  Este fichero contiene SOLO PHP. Según las recomendaciones PSR-12,
+ *  se omite la etiqueta de cierre final para evitar enviar espacios o
+ *  saltos de línea accidentales en las cabeceras HTTP de respuesta.
  */
 
-// TODO 1. Directiva strict_types (primera instrucción del fichero).
+declare(strict_types=1);
 
-// TODO 2. Constantes con const: CLASE_HEROE, XP_POR_NIVEL, VIDA_BASE,
-//         MULT_VIDA, BLOQUES_BARRA y NOMBRE_RIVAL.
-//         PODER_RIVAL, con define().
-//         (Valores: tabla de tu variante en el enunciado.)
+// --- Constantes con const (reglas generales y variante C) ------------
+const CLASE_HEROE   = 'Pícara';
+const XP_POR_NIVEL  = 400;
+const VIDA_BASE     = 50;
+const MULT_VIDA     = 2;
+const BLOQUES_BARRA = 20;
+const NOMBRE_RIVAL  = 'Sombra Gemela';
 
-// TODO 3. Datos del héroe. Las estadísticas se escriben como TEXTO,
-//         entre comillas, tal como aparecen en el enunciado:
-//         $nombreHeroe, $apodo (null), $lema (''), $fuerzaTxt,
-//         $destrezaTxt, $inteligenciaTxt, $constitucionTxt,
-//         $experienciaTxt, $vidaActualTxt, $oroTxt, $esVeterano (bool).
+// Constante definida con define()
+define('PODER_RIVAL', 236);
+
+// --- Datos del héroe (estadísticas recibidas como texto entre comillas)
+$nombreHeroe     = 'Vex <Sin Nombre>';
+$apodo           = null;
+$lema            = '';
+$fuerzaTxt       = '11';
+$destrezaTxt     = '18';
+$inteligenciaTxt = '12';
+$constitucionTxt = '12';
+$experienciaTxt  = '1890';
+$vidaActualTxt   = '96';
+$oroTxt          = '2045.6';
+$esVeterano      = true;
