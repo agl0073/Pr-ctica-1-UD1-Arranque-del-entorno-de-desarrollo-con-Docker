@@ -123,10 +123,10 @@ $phpVersion      = PHP_VERSION;
 </head>
 <body>
 <main>
-    <!-- R1: Insignia VETERANO/NOVATO con la forma larga <?php echo ...; ?> -->
+    <!-- R1: Insignia VETERANO/NOVATO con la forma larga (echo) -->
     <span class="insignia"><?php echo $insignia; ?></span>
 
-    <!-- Salidas restantes con la forma corta <?= ... ?> -->
+    <!-- Salidas restantes con la forma corta -->
     <h1><?= $nombreSeguro ?></h1>
     <p class="subtitulo"><?= CLASE_HEROE ?> · «<?= $apodoSeguro ?>» · <?= $lemaSeguro ?></p>
 
