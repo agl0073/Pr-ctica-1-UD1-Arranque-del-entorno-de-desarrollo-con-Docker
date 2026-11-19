@@ -3,8 +3,9 @@
 **Código de alumno/a:** agl0073  (no pongas tu nombre)
 
 ## 1. Mi aventurero
-- Usuario que he añadido a la tabla: ______
+- Usuario que he añadido a la tabla: `agl0073` (y comprobado con `brunhilda`, `aldric` y `vex`)
 - Comando o pasos que he usado para generar el hash:
+  Importación del script `gremio.sql` desde phpMyAdmin (o consola MySQL) con las contraseñas cifradas en bcrypt mediante `PASSWORD_DEFAULT` / `password_hash()`.
 
 ## 2. Parte 1 · match y estructura del tablón
 
@@ -28,24 +29,38 @@
    - Renderizado condicional del botón de interacción según el estado de la misión (formulario POST con identificador oculto o marca visual `✔ En tu zurrón`).
 
 ## 3. Parte 2 · Validación de la URL
-Escribe a mano en la barra `tablon.php?rango=Z&oro=hola`. ¿Qué ocurre y qué línea de tu código lo evita?
+
+Al introducir manualmente en el navegador `tablon.php?rango=Z&oro=hola`, ocurre lo siguiente:
+
+- **`?rango=Z`**: La función `leerRangoFiltro($_GET)` convierte el valor a mayúsculas con `strtoupper()` y lo comprueba contra la constante `RANGOS` usando `in_array($rango, RANGOS, true)`. Como `'Z'` no existe en ese array, la función devuelve `null`, lo que hace que `filtrarMisiones()` ignore el filtro de rango y muestre todas las misiones sin ningún error ni aviso.
+
+- **`&oro=hola`**: La función `leerOroMinimo($_GET)` utiliza `filter_var($get['oro'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 10000]])`. La cadena `'hola'` no es un entero válido, por lo que `filter_var` devuelve `false` y la función retorna `0`. El filtro de oro mínimo queda en cero, mostrando todas las misiones sin errores.
+
+**Resultado final**: se muestran las 10 misiones como si no se hubiese aplicado ningún filtro. No se produce ningún aviso de PHP, error visible ni comportamiento inesperado. El código defiende la aplicación de entradas malformadas o manipuladas en la URL, cumpliendo el principio de validar siempre los datos externos antes de usarlos.
 
 ## 4. Parte 3 · Sesión frente a cookie
-Explica con tus palabras qué guardas en `$_SESSION` y qué guardas en cookies, y por qué no al revés.
+- **Qué se guarda en `$_SESSION`:** Se guardan los datos sensibles y el estado del usuario conectado en el servidor: los datos del aventurero (`id`, `usuario`, `nombre`, `clase`), el array de misiones aceptadas en el zurrón (`$_SESSION['zurron']`), la hora de entrada y el contador de visitas a la sesión.
+- **Qué se guarda en cookies:** Se guardan únicamente preferencias no críticas y datos del navegador del cliente: el tema visual (`gremio_tema`, con valores `claro` u `oscuro`) y el nombre de usuario recordado (`gremio_usuario`) si marcó la casilla.
+- **¿Por qué no al revés?:** Las cookies se almacenan en el equipo del cliente y viajan en cada cabecera HTTP; el usuario las puede ver, modificar o manipular libremente desde las herramientas de desarrollador. Guardar datos sensibles (contraseñas, hashes, permisos o el contenido del zurrón) en cookies permitiría su alteración y comprometería la seguridad. En cambio, `$_SESSION` se almacena exclusivamente en la memoria del servidor bajo el identificador seguro `PHPSESSID`, garantizando la integridad de los datos.
 
 ## 5. Parte 3 · Seguridad del login
-- ¿Qué pasa si en el usuario escribes `' OR '1'='1`? ¿Por qué?
-- ¿Para qué sirve `session_regenerate_id(true)`?
-- ¿Por qué el mensaje de error es el mismo si falla el usuario o la contraseña?
+- **¿Qué pasa si en el usuario escribes `' OR '1'='1`? ¿Por qué?**  
+  No ocurre absolutamente nada y la autenticación falla con el mensaje genérico de error. Se debe a que la consulta utiliza sentencias preparadas con PDO (`WHERE usuario = :usuario`). El motor de base de datos separa la lógica SQL de los datos, tratando la entrada maliciosa como una simple cadena de texto literal y neutralizando cualquier intento de inyección SQL.
+
+- **¿Para qué sirve `session_regenerate_id(true)`?**  
+  Sirve para prevenir ataques de **fijación de sesión** (*session fixation*). Al autenticar al usuario con éxito, se genera un identificador de sesión completamente nuevo y se invalida el anterior, impidiendo que un tercero que conozca el `PHPSESSID` previo pueda suplantar la sesión una vez que el usuario ha iniciado sesión.
+
+- **¿Por qué el mensaje de error es el mismo si falla el usuario o la contraseña?**  
+  Por motivos de seguridad contra **enumeración de usuarios**. Si se indicara «El usuario no existe» o «Contraseña incorrecta», un atacante podría deducir qué nombres de usuario están dados de alta en el sistema. Con un mensaje genérico único («Usuario o contraseña incorrectos»), no se revela ninguna información útil para posibles ataques por fuerza bruta o diccionario.
 
 ## 6. Pruebas que he hecho
 | Prueba | Resultado esperado | Resultado obtenido |
 |---|---|---|
-| Entrar en tablon.php sin login | | |
-| Login con contraseña mala | | |
-| Aceptar la misma misión dos veces | | |
-| Cerrar sesión y volver al zurrón | | |
-| Cambiar el tema y cerrar sesión | | |
+| Entrar en tablon.php sin login | Redirige a `login.php?motivo=privado` con aviso de sala privada | Redirección correcta y aviso «Esa sala es solo para miembros del gremio» |
+| Login con contraseña mala | Muestra mensaje de error genérico | Muestra «Usuario o contraseña incorrectos.» en rojo |
+| Aceptar la misma misión dos veces | Mensaje flash de aviso sin duplicar en el zurrón | Avisa que ya está en el zurrón y mantiene 1 copia |
+| Cerrar sesión y volver al zurrón | Destruye la sesión y redirige a login | Redirige a `login.php?motivo=salida` con zurrón vaciado |
+| Cambiar el tema y cerrar sesión | El tema oscuro se mantiene gracias a la cookie | El tema oscuro persiste tras cerrar sesión y en toda la web |
 
 ## 7. Dificultades y cómo las he resuelto
 - **Sintaxis y evaluación estricta en la expresión `match`:**  
@@ -57,8 +72,10 @@ Explica con tus palabras qué guardas en `$_SESSION` y qué guardas en cookies, 
 - **Concordancia gramatical y formateo numérico:**  
   Al iterar las tarjetas de misión, las duraciones de 1 día mostraban inicialmente «1 días». Se solventó implementando un operador ternario que evalúa si el valor es exactamente 1 (`$mision['dias'] === 1 ? '1 día' : $mision['dias'] . ' días'`). Asimismo, para la recompensa económica se ajustaron los parámetros de `number_format($oro, 0, ',', '.')` para evitar decimales innecesarios y emplear el punto como separador de millares estándar en España.
 
-- **Legibilidad en la interpolación y renderizado de HTML:**  
-  La mezcla continua de etiquetas de apertura y cierre de PHP (`<?php` y `?>`) dentro de cada atributo HTML reducía la claridad del código y aumentaba el riesgo de introducir espacios o caracteres residuales. Se resolvió unificando la generación de las tarjetas mediante un único bloque de ejecución PHP estructurado, construyendo la salida con llamadas limpias a `echo` y protegiendo cada dato dinámico con `e()`.
+- **Conexión PDO en el entorno Docker y depuración del login:**  
+  Al probar el inicio de sesión inicial, surgieron fallos al mapear los parámetros de conexión de MySQL entre las variables de entorno de Docker (`MYSQL_*`) y los puertos de acceso de Nginx y phpMyAdmin. Con ayuda de consultas de depuración guiadas, se ajustaron las variables en `docker-compose.yml` para garantizar que `conectar()` resolviese correctamente el host interno de base de datos.
 
 ## 8. Uso de Inteligencia Artificial
-El único uso de herramientas de Inteligencia Artificial en esta práctica ha sido exclusivamente como apoyo para la redacción, corrección de estilo y estructuración documental de este archivo de memoria (`MEMORIA.md`). Todo el análisis lógico, diseño e implementación del código fuente del proyecto ha sido desarrollado de forma manual y autónoma conforme a los requisitos de la actividad.
+En esta práctica se ha hecho uso de herramientas de Inteligencia Artificial de forma puntual y como apoyo asistido:
+1. **Asistencia técnica en el inicio de sesión:** Se consultó a la IA para orientar la resolución de problemas durante la configuración del entorno Docker (conexión PDO y arranque de phpMyAdmin) y para revisar la estructura del flujo de autenticación segura (`password_verify`, sentencias preparadas y regeneración de sesión), facilitando la comprensión y puesta en marcha del login sin errores de ejecución.
+2. **Revisión documental:** La IA se utilizó como asistente de redacción para maquetar, estructurar y pulir la redacción formal de este archivo de memoria (`MEMORIA.md`). El análisis lógico de las soluciones y la integración práctica fueron guiados y comprobados manualmente por el alumno.

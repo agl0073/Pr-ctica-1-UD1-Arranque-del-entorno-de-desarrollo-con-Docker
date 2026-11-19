@@ -17,9 +17,15 @@ $misiones   = require __DIR__ . '/inc/datos_misiones.php';
 $_SESSION['zurron'] ??= [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // TODO: abandonar la misión $_POST['id'] del zurrón.
-    //  Pista: array_search(..., true), unset y array_values para reindexar.
-    //  Mensaje flash y redirección a zurron.php.
+    $id = $_POST['id'] ?? '';
+    $pos = array_search($id, $_SESSION['zurron'], true);
+    if ($pos !== false) {
+        unset($_SESSION['zurron'][$pos]);
+        $_SESSION['zurron'] = array_values($_SESSION['zurron']);
+        mensajeFlash('Misión abandonada.');
+    }
+    header('Location: zurron.php');
+    exit;
 }
 
 $ids   = $_SESSION['zurron'];
@@ -33,11 +39,35 @@ require __DIR__ . '/inc/cabecera.php';
 <?php if ($flash !== null): ?><p class="aviso"><?= e($flash) ?></p><?php endif; ?>
 
 <?php
-/*
- * TODO: si el zurrón está vacío, enlace al tablón.
- * Si no, una <table> con: Misión · Rango · Recompensa · botón "Abandonar"
- * (formulario POST con el id oculto) y una fila final con la recompensa total.
- */
+if (empty($ids)) {
+    echo '<p>Tu zurrón está vacío. <a href="tablon.php">Vuelve al tablón</a> para aceptar misiones.</p>';
+} else {
+    echo '<table>';
+    echo '<thead><tr><th>Misión</th><th>Rango</th><th>Recompensa</th><th></th></tr></thead>';
+    echo '<tbody>';
+    foreach ($ids as $id) {
+        $mision = buscarMision($misiones, $id);
+        if ($mision === null) continue;
+        echo '<tr>';
+        echo '<td>' . e($mision['titulo']) . '</td>';
+        echo '<td>' . e($mision['rango']) . ' · ' . e(etiquetaRango($mision['rango'])) . '</td>';
+        echo '<td>' . e(formatearOro($mision['recompensa'])) . '</td>';
+        echo '<td>';
+        echo '<form method="post" action="zurron.php">';
+        echo '<input type="hidden" name="id" value="' . e($mision['id']) . '">';
+        echo '<button type="submit" class="secundario">Abandonar</button>';
+        echo '</form>';
+        echo '</td>';
+        echo '</tr>';
+    }
+    echo '</tbody>';
+    echo '<tfoot><tr>';
+    echo '<td colspan="2"><strong>Total</strong></td>';
+    echo '<td><strong>' . e(formatearOro($total)) . '</strong></td>';
+    echo '<td></td>';
+    echo '</tr></tfoot>';
+    echo '</table>';
+}
 ?>
 <p class="nota">El zurrón vive en la sesión: si sales del gremio, se vacía.</p>
 <?php require __DIR__ . '/inc/pie.php'; ?>

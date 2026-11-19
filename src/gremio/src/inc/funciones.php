@@ -69,7 +69,17 @@ function formatearOro(int $oro): string
  */
 function filtrarMisiones(array $misiones, ?string $rango, int $oroMinimo): array
 {
-    return $misiones; // TODO
+    $resultado = [];
+    foreach ($misiones as $mision) {
+        if ($rango !== null && $mision['rango'] !== $rango) {
+            continue;
+        }
+        if ($mision['recompensa'] < $oroMinimo) {
+            continue;
+        }
+        $resultado[] = $mision;
+    }
+    return $resultado;
 }
 
 /**
@@ -77,7 +87,12 @@ function filtrarMisiones(array $misiones, ?string $rango, int $oroMinimo): array
  */
 function buscarMision(array $misiones, string $id): ?array
 {
-    return null; // TODO
+    foreach ($misiones as $mision) {
+        if ($mision['id'] === $id) {
+            return $mision;
+        }
+    }
+    return null;
 }
 
 /**
@@ -86,7 +101,14 @@ function buscarMision(array $misiones, string $id): ?array
  */
 function totalRecompensa(array $misiones, array $ids): int
 {
-    return 0; // TODO
+    $total = 0;
+    foreach ($ids as $id) {
+        $mision = buscarMision($misiones, $id);
+        if ($mision !== null) {
+            $total += $mision['recompensa'];
+        }
+    }
+    return $total;
 }
 
 /**
@@ -96,7 +118,11 @@ function totalRecompensa(array $misiones, array $ids): int
  */
 function leerRangoFiltro(array $get): ?string
 {
-    return null; // TODO
+    if (!isset($get['rango']) || $get['rango'] === '') {
+        return null;
+    }
+    $rango = strtoupper($get['rango']);
+    return in_array($rango, RANGOS, true) ? $rango : null;
 }
 
 /**
@@ -106,5 +132,10 @@ function leerRangoFiltro(array $get): ?string
  */
 function leerOroMinimo(array $get): int
 {
-    return 0; // TODO
+    $valor = filter_var(
+        $get['oro'] ?? null,
+        FILTER_VALIDATE_INT,
+        ['options' => ['min_range' => 0, 'max_range' => 10000]]
+    );
+    return $valor === false ? 0 : $valor;
 }

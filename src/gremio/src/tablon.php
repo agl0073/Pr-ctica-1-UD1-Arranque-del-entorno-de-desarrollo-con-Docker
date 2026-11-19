@@ -19,15 +19,24 @@ $misiones   = require __DIR__ . '/inc/datos_misiones.php';
 $_SESSION['zurron'] ??= [];
 
 // TODO (Parte 3): suma 1 a $_SESSION['visitas'] en cada carga del tablón.
+$_SESSION['visitas'] = ($_SESSION['visitas'] ?? 0) + 1;
 
 // ---- POST: aceptar una misión --------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // TODO (Parte 2):
-    //  1. Lee $_POST['id'] y busca la misión con buscarMision().
-    //  2. Si no existe → mensajeFlash('Esa misión no existe en el tablón.')
-    //  3. Si ya está en $_SESSION['zurron'] → mensaje de aviso, sin duplicar.
-    //  4. Si no → añade el id a $_SESSION['zurron'] y mensaje de confirmación.
-    //  5. Redirige (header Location + exit) para no reenviar el formulario con F5.
+    $id = $_POST['id'] ?? '';
+    $mision = buscarMision($misiones, $id);
+
+    if ($mision === null) {
+        mensajeFlash('Esa misión no existe en el tablón.');
+    } elseif (in_array($id, $_SESSION['zurron'], true)) {
+        mensajeFlash('Ya tienes esa misión en tu zurrón.');
+    } else {
+        $_SESSION['zurron'][] = $id;
+        mensajeFlash('¡Misión «' . $mision['titulo'] . '» aceptada!');
+    }
+
+    header('Location: tablon.php');
+    exit;
 }
 
 // ---- GET: filtros ---------------------------------------------------------
@@ -40,7 +49,7 @@ $titulo = 'Tablón de misiones';
 require __DIR__ . '/inc/cabecera.php';
 ?>
 <h1>Tablón de misiones</h1>
-<!-- TODO (Parte 3): muestra la hora de entrada y las visitas de esta sesión. -->
+<p class="nota">Entrada al gremio: <?= e($_SESSION['entrada'] ?? '—') ?> · Visitas a esta sala: <?= e((string)($_SESSION['visitas'] ?? 1)) ?></p>
 <?php if ($flash !== null): ?><p class="aviso"><?= e($flash) ?></p><?php endif; ?>
 
 <form method="get" action="tablon.php" class="filtros">
